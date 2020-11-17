@@ -48,19 +48,16 @@ interface AuthenticationInfo {
 
 
 function credentialsFile(): string {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	if (!('_credentialsFile' in (global as any))) {
+	if (!('_credentialsFile' in (global as unknown as { _credentialsFile: string }))) {
 		throw new Error('LoginAuthenticator credentials file not set.')
 	}
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	return (global as any)._credentialsFile
+	return (global as unknown as { _credentialsFile: string })._credentialsFile
 }
 
 export class LoginAuthenticator implements Authenticator {
 	private static credentialsFile?: string
 	public static init(credentialsFile: string): void {
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		(global as any)._credentialsFile = credentialsFile
+		(global as unknown as { _credentialsFile: string })._credentialsFile = credentialsFile
 
 		const cliDir = path.dirname(credentialsFile)
 		fs.mkdirSync(cliDir, { recursive: true })
@@ -130,6 +127,11 @@ export class LoginAuthenticator implements Authenticator {
 			}
 		})
 		this.authenticationInfo = authenticationInfo
+	}
+
+	async tempForTest(): Promise<number> {
+		const port = await getPort({ port: [61973, 61974, 61975] })
+		return port
 	}
 
 	async login(): Promise<void> {
